@@ -1,4 +1,4 @@
-// NOTE : There is not any case in Priority_Preemptive where AT=0 for all as if AT=0 for all it behaves like Priority_Non_Preemptive type CPU scheduling 
+// NOTE : There is not any case in Priority_Preemptive where AT=0 for all(or same AT) as if AT=0 for all it behaves like Priority_Non_Preemptive type CPU scheduling 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,6 +59,33 @@ int find_highest_priority_process(Process processes[], int n, int current_time) 
     }
 
     return selected_process;
+}
+
+// Function to display the Gantt chart
+void display_gantt_chart(GanttSlice gantt[], int gantt_size) {
+    // Print Gantt Chart
+    printf("\nGantt Chart:\n");
+    // top line
+    printf("|\n");
+    for (int i = 0; i < gantt_size; i++) {
+        printf("%2d----", gantt[i].start_time);
+    }
+    // middle line
+    printf("%2d\n", gantt[gantt_size - 1].end_time);
+    for (int i = 0; i < gantt_size; i++) {
+        printf("| ");
+        if (gantt[i].process_id == -1) {
+            printf("Idle ");
+        } else {
+            printf(" P%d ", gantt[i].process_id);
+        }
+    }
+    // bottom line 
+    printf("|\n");
+    for (int i = 0; i < gantt_size; i++) {
+        printf("%2d----", gantt[i].start_time);
+    }
+    printf("%2d\n", gantt[gantt_size - 1].end_time);
 }
 
 // Function to implement Priority Preemptive Scheduling
@@ -155,21 +182,8 @@ void priority_preemptive_scheduling(Process processes[], int n) {
     printf("\nAverage Response Time: %.2f", avg_response_time / n);
     printf("\nTotal Idle Time: %d\n", total_idle_time);
 
-    // Print Gantt Chart
-    printf("\nGantt Chart:\n");
-    for (int i = 0; i < gantt_size; i++) {
-        printf("| ");
-        if (gantt[i].process_id == -1) {
-            printf("Idle ");
-        } else {
-            printf("P%d  ", gantt[i].process_id);
-        }
-    }
-    printf("|\n");
-    for (int i = 0; i < gantt_size; i++) {
-        printf("%d    ", gantt[i].start_time);
-    }
-    printf("%d\n", gantt[gantt_size - 1].end_time);
+    // Display the Gantt chart
+    display_gantt_chart(gantt, gantt_size);
 }
 
 int main() {
@@ -200,16 +214,18 @@ int main() {
         
         // Initialize remaining time and first_run flag
         processes[i].remaining_time = processes[i].burst_time;
+        processes[i].completion_time = 0;
+        processes[i].turnaround_time = 0;
+        processes[i].waiting_time = 0;
+        processes[i].response_time = 0;
         processes[i].first_run = 0;
     }
 
-    printf("\n\n");
-    // Run the priority preemptive scheduling algorithm
+    // Perform priority preemptive scheduling
     priority_preemptive_scheduling(processes, n);
 
     return 0;
 }
-
 
 /*
 ┌──(divyanshu㉿kali)-[~/Desktop]
@@ -217,7 +233,7 @@ int main() {
                                                                                                                                                                                                                                             
 ┌──(divyanshu㉿kali)-[~/Desktop]
 └─$ ./code            
-Enter the number of processes: 7
+Enter the number of processes: 7       
 Enter details for process 1:
 Process ID: 1
 Arrival Time: 0
@@ -253,8 +269,6 @@ Process ID: 7
 Arrival Time: 10
 Burst Time: 1
 Priority (lower value means higher priority): 1
-
-
 Ready Queue at time 0: P1 
 Ready Queue at time 1: P1 P2 
 Ready Queue at time 2: P1 P2 
@@ -298,7 +312,9 @@ Average Response Time: 8.71
 Total Idle Time: 0
 
 Gantt Chart:
-| P1  | P5  | P7  | P5  | P1  | P2  | P3  | P4  | P6  |
-0    5    10    11    12    15    17    21    22    27
+|
+ 0---- 5----10----11----12----15----17----21----22----27
+|  P1 |  P5 |  P7 |  P5 |  P1 |  P2 |  P3 |  P4 |  P6 |
+ 0---- 5----10----11----12----15----17----21----22----27
 
  */

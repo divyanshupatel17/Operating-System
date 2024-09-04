@@ -37,6 +37,48 @@ void displayReadyQueue(Process processes[], int n, int currentTime) {
     printf("\n");
 }
 
+// Function to display the Gantt Chart in format 1
+void displayGanttChartFormat1(Process executionOrder[], int executionIndex) {
+    printf("\nGantt Chart:\n");
+    printf("0");
+    for (int i = 0; i < executionIndex; i++) {
+        printf("----");
+        printf("%2d", executionOrder[i].ct);
+    }
+    printf("\n");
+
+    // Display process execution in Gantt chart format
+    for (int i = 0; i < executionIndex; i++) {
+        printf("|");       
+        if (executionOrder[i].id == -1) {
+            printf("Idle ");
+        } else {
+            printf(" P%d  ", executionOrder[i].id);
+        }
+    }
+    printf("|\n");
+
+    printf("0");
+    for (int i = 0; i < executionIndex; i++) {
+        printf("----");
+        printf("%2d", executionOrder[i].ct);
+    }
+    printf("\n");
+}
+
+// Function to display the Gantt Chart in format 2
+void displayGanttChartFormat2(Process executionOrder[], int executionIndex) {
+    printf("\nDetailed Gantt Chart:\n");
+    for (int i = 0; i < executionIndex; i++) {
+        if (executionOrder[i].id == -1) {
+            printf("Idle (%d-%d)\t", executionOrder[i].start_time, executionOrder[i].ct);
+        } else {
+            printf("P%d (%d-%d)\t", executionOrder[i].id, executionOrder[i].start_time, executionOrder[i].ct);
+        }
+    }
+    printf("\n");
+}
+
 // Function to implement SJF Non-preemptive Scheduling Algorithm
 void sjf_non_preemptive(Process processes[], int n) {
     float wtavg = 0, tatavg = 0; // Average waiting time and turnaround time
@@ -123,50 +165,11 @@ void sjf_non_preemptive(Process processes[], int n) {
     printf("\nAverage Turnaround Time: %.2f", tatavg / n);
     printf("\nTotal Idle Time: %d\n", idleTime);
 
-    // Display Gantt Chart : FORMAT 1
-    printf("\nGantt Chart:\n");
-    printf("0");
-    for (int i = 0; i < executionIndex; i++) {
-        printf("----");
-        printf("%d", executionOrder[i].ct);
-    }
-    printf("\n");
+    // Display Gantt Chart using Format 1
+    displayGanttChartFormat1(executionOrder, executionIndex);
 
-    // Display process execution in Gantt chart format
-    for (int i = 0; i < executionIndex; i++) {
-        printf("|");
-        int spaces = executionOrder[i].bt - 1;
-        for (int j = 0; j < spaces / 2; j++) {
-            printf(" ");
-        }
-        if (executionOrder[i].id == -1) {
-            printf("Idle");
-        } else {
-            printf("P%d", executionOrder[i].id);
-        }
-        for (int j = 0; j < spaces - spaces / 2; j++) {
-            printf(" ");
-        }
-    }
-    printf("|\n");
-
-    printf("0");
-    for (int i = 0; i < executionIndex; i++) {
-        printf("----");
-        printf("%d", executionOrder[i].ct);
-    }
-    printf("\n");
-
-    // Display Gantt Chart : FORMAT 2
-    printf("\nDetailed Gantt Chart:\n");
-    for (int i = 0; i < executionIndex; i++) {
-        if (executionOrder[i].id == -1) {
-            printf("Idle (%d-%d)\t", executionOrder[i].start_time, executionOrder[i].ct);
-        } else {
-            printf("P%d (%d-%d)\t", executionOrder[i].id, executionOrder[i].start_time, executionOrder[i].ct);
-        }
-    }
-    printf("\n");
+    // Display Gantt Chart using Format 2
+    displayGanttChartFormat2(executionOrder, executionIndex);
 }
 
 int main() {
@@ -212,7 +215,7 @@ int main() {
 /*
 ┌──(divyanshu㉿kali)-[~/Desktop]
 └─$ gcc temp.c -o code
-                                                                                                                                                                                                                                            
+                                                                                                                    
 ┌──(divyanshu㉿kali)-[~/Desktop]
 └─$ ./code            
 Enter the number of processes: 4
@@ -247,11 +250,11 @@ Average Turnaround Time: 6.25
 Total Idle Time: 1
 
 Gantt Chart:
-0----1----3----6----10----14
-|Idle|P3 | P1 | P2  | P4  |
-0----1----3----6----10----14
+0---- 1---- 3---- 6----10----14
+|Idle | P3  | P1  | P2  | P4  |
+0---- 1---- 3---- 6----10----14
 
 Detailed Gantt Chart:
 Idle (0-1)      P3 (1-3)        P1 (3-6)        P2 (6-10)       P4 (10-14)
 
- */
+*/

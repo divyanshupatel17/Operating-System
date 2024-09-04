@@ -28,6 +28,61 @@ void displayReadyQueue(Process processes[], int n, int currentTime) {
     printf("\n");
 }
 
+void displayGanttChart(Process processes[], int n) {
+    int currentTime = 0;
+
+    printf("\nGantt Chart:\n");
+
+    // Print top timeline
+    printf("%2d", currentTime);
+    for (int i = 0; i < n; i++) {
+        if (currentTime < processes[i].at) {
+            printf("----");
+            printf("%2d", processes[i].at);
+            currentTime = processes[i].at;
+        }
+        printf("----");
+        currentTime += processes[i].bt;
+        printf("%2d", currentTime);
+    }
+    printf("\n");
+
+    // Print process IDs (and Idle if applicable)
+    currentTime = 0;
+    printf(" |");
+    for (int i = 0; i < n; i++) {
+        if (currentTime < processes[i].at) {
+            printf("Idle |");
+            currentTime = processes[i].at;
+        }
+        // Print process ID
+        for (int j = 0; j < processes[i].bt; j++) {
+            if (j == 0) {
+                printf(" P%d  ", processes[i].id);
+            } 
+        }
+        printf("|");
+        currentTime += processes[i].bt;
+    }
+    printf("\n");
+
+    // Print bottom timeline
+    currentTime = 0;
+    printf("%2d", currentTime);
+    for (int i = 0; i < n; i++) {
+        if (currentTime < processes[i].at) {
+            printf("----");
+            printf("%2d", processes[i].at);
+            currentTime = processes[i].at;
+        }
+        printf("----");
+        currentTime += processes[i].bt;
+        printf("%2d", currentTime);
+    }
+    printf("\n");
+}
+
+
 void fcfs(Process processes[], int n) {
     float wtavg = 0, tatavg = 0;
     int currentTime = 0;  // Keep track of the current time
@@ -74,47 +129,8 @@ void fcfs(Process processes[], int n) {
     printf("\nAverage Turnaround Time: %.2f", tatavg / n);
     printf("\nTotal Idle Time: %d\n", idleTime);
 
-    // Display Gantt Chart : FORMAT 1
-    printf("\nGantt Chart:\n");
-
-    // Print the top border
-    printf("Timeline: ");
-    printf("0");
-    for (int i = 0; i < n; i++) {
-        printf("-----");
-    }
-    printf("\n");
-
-    // Print process identifiers
-    printf("Process: ");
-    for (int i = 0; i < n; i++) {
-        printf("P%d\t", processes[i].id);
-    }
-    printf("\n");
-
-    // Print the bottom border
-    printf("Timeline: ");
-    printf("0");
-    for (int i = 0; i < n; i++) {
-        printf("-----");
-    }
-    printf("\n");
-
-    // Display Gantt Chart : FORMAT 2
-    // Detailed Gantt chart with idle times
-    printf("\nDetailed Gantt Chart:\n");
-    int lastTime = 0;
-    for (int i = 0; i < n; i++) {
-        if (processes[i].at > lastTime) {
-            printf("Idle (%d-%d)\t", lastTime, processes[i].at);
-        }
-        printf("P%d (%d-%d)\t", processes[i].id, processes[i].ct - processes[i].bt, processes[i].ct);
-        lastTime = processes[i].ct;
-    }
-    if (lastTime < currentTime) {
-        printf("Idle (%d-%d)\t", lastTime, currentTime);
-    }
-    printf("\n");
+    // Display the Gantt chart
+    displayGanttChart(processes, n);
 }
 
 int main() {
@@ -160,54 +176,47 @@ int main() {
 }
 
 
+
 /*
 ┌──(divyanshu㉿kali)-[~/Desktop]
-└─$ gcc temp.c -o code                                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                            
+└─$ gcc temp.c -o code
+                                                                                                                    
 ┌──(divyanshu㉿kali)-[~/Desktop]
 └─$ ./code            
-Enter the number of processes: 5
+Enter the number of processes: 4       
 Include Arrival Time (0 for No, 1 for Yes): 1
 Enter Process ID for Process 0: 1
-Enter Arrival Time for Process 0: 2
+Enter Arrival Time for Process 0: 0
 Enter Burst Time for Process 0: 2
 Enter Process ID for Process 1: 2
-Enter Arrival Time for Process 1: 0
-Enter Burst Time for Process 1: 1
+Enter Arrival Time for Process 1: 1
+Enter Burst Time for Process 1: 2
 Enter Process ID for Process 2: 3
-Enter Arrival Time for Process 2: 2
+Enter Arrival Time for Process 2: 5
 Enter Burst Time for Process 2: 3
 Enter Process ID for Process 3: 4
-Enter Arrival Time for Process 3: 3
-Enter Burst Time for Process 3: 5
-Enter Process ID for Process 4: 5
-Enter Arrival Time for Process 4: 4
-Enter Burst Time for Process 4: 4
+Enter Arrival Time for Process 3: 6
+Enter Burst Time for Process 3: 4
 
 
-Ready Queue at time 0: P2 
-Ready Queue at time 2: P1 P3 
-Ready Queue at time 4: P3 P4 P5 
-Ready Queue at time 7: P4 P5 
-Ready Queue at time 12: P5 
+Ready Queue at time 0: P1 
+Ready Queue at time 2: P2 
+Ready Queue at time 5: P3 
+Ready Queue at time 8: P4 
 
 PROCESS ID      BURST TIME      ARRIVAL TIME    COMPLETION TIME WAITING TIME    TURNAROUND TIME RESPONSE TIME
-2               1               0               1               0               1               0
-1               2               2               4               0               2               0
-3               3               2               7               2               5               2
-4               5               3               12              4               9               4
-5               4               4               16              8               12              8
+1               2               0               2               0               2               0
+2               2               1               4               1               3               1
+3               3               5               8               0               3               0
+4               4               6               12              2               6               2
 
-Average Waiting Time: 2.80
-Average Turnaround Time: 5.80
+Average Waiting Time: 0.75
+Average Turnaround Time: 3.50
 Total Idle Time: 1
 
 Gantt Chart:
-Timeline: 0-------------------------
-Process: P2     P1      P3      P4      P5
-Timeline: 0-------------------------
-
-Detailed Gantt Chart:
-P2 (0-1)        Idle (1-2)      P1 (2-4)        P3 (4-7)        P4 (7-12)       P5 (12-16)
+ 0---- 2---- 4---- 5---- 8----12
+ | P1  | P2  |Idle | P3  | P4  |
+ 0---- 2---- 4---- 5---- 8----12
 
 */

@@ -1,9 +1,8 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> // For qsort()
 
 #define MAX 20
 
-// Structure to represent a process
 typedef struct {
     int id;             // Process ID
     int bt;             // Burst Time
@@ -33,6 +32,41 @@ void displayReadyQueue(Process processes[], int n, int currentTime) {
     for (int i = 0; i < n; i++) {
         if (processes[i].at <= currentTime && processes[i].completed == 0) {
             printf("P%d ", processes[i].id);
+        }
+    }
+    printf("\n");
+}
+
+// Function to display Gantt Chart
+void displayGanttChart(Process processes[], int n, Process executionOrder[], int executionIndex) {
+    printf("\nGantt Chart:\n");
+    printf("0");
+    for (int i = 0; i < executionIndex; i++) {
+        printf("----");
+        printf("%2d", executionOrder[i].ct);
+    }
+    printf("\n|");
+    for (int i = 0; i < executionIndex; i++) {
+        if (executionOrder[i].id == -1) {
+            printf("Idle |");
+        } else {
+            printf(" P%d  |", executionOrder[i].id);
+        }
+    }
+    printf("\n0");
+    for (int i = 0; i < executionIndex; i++) {
+        printf("----");
+        printf("%2d", executionOrder[i].ct);
+    }
+    printf("\n");
+
+    // Display Detailed Gantt Chart
+    printf("\nDetailed Gantt Chart:\n");
+    for (int i = 0; i < executionIndex; i++) {
+        if (executionOrder[i].id == -1) {
+            printf("Idle (%d-%d)\t", executionOrder[i].start_time, executionOrder[i].ct);
+        } else {
+            printf("P%d (%d-%d)\t", executionOrder[i].id, executionOrder[i].start_time, executionOrder[i].ct);
         }
     }
     printf("\n");
@@ -86,7 +120,7 @@ void priority_non_preemptive(Process processes[], int n) {
                 executionOrder[executionIndex-1].bt++;
                 executionOrder[executionIndex-1].ct = currentTime;
             }
-        } else if (highestPriorityIndex != -1) { // If a process is ready
+        } else { // If a process is ready
             // Display the ready queue at the current time
             displayReadyQueue(processes, n, currentTime);
             
@@ -104,8 +138,6 @@ void priority_non_preemptive(Process processes[], int n) {
             // Move current time forward to process completion time
             currentTime = processes[highestPriorityIndex].ct;
             completedProcesses++;
-        } else { // If no process is ready and idle time is not included
-            currentTime++; // Just increment the time without recording idle time
         }
     }
     
@@ -128,39 +160,8 @@ void priority_non_preemptive(Process processes[], int n) {
     printf("\nAverage Turnaround Time: %.2f", tatavg / n);
     printf("\nTotal Idle Time: %d\n", idleTime);
     
-    
-    // Display Gantt Chart : FORMAT 1
-    printf("\nGantt Chart:\n");
-    printf("0");
-    for (int i = 0; i < executionIndex; i++) {
-        printf("----");
-        printf("%d", executionOrder[i].ct);
-    }
-    printf("\n|");
-    for (int i = 0; i < executionIndex; i++) {
-        if (executionOrder[i].id == -1) {
-            printf("Idle|");
-        } else {
-            printf(" P%d |", executionOrder[i].id);
-        }
-    }
-    printf("\n0");
-    for (int i = 0; i < executionIndex; i++) {
-        printf("----");
-        printf("%d", executionOrder[i].ct);
-    }
-    printf("\n");
-
-    // Display Gantt Chart : FORMAT 2
-    printf("\nDetailed Gantt Chart:\n");
-    for (int i = 0; i < executionIndex; i++) {
-        if (executionOrder[i].id == -1) {
-            printf("Idle (%d-%d)\t", executionOrder[i].start_time, executionOrder[i].ct);
-        } else {
-            printf("P%d (%d-%d)\t", executionOrder[i].id, executionOrder[i].start_time, executionOrder[i].ct);
-        }
-    }
-    printf("\n");
+    // Display Gantt Chart
+    displayGanttChart(processes, n, executionOrder, executionIndex);
 }
 
 int main() {
@@ -205,11 +206,10 @@ int main() {
     return 0;
 }
 
-
 /*
 ┌──(divyanshu㉿kali)-[~/Desktop]
 └─$ gcc temp.c -o code
-                                                                                                                                                                                                                                            
+                                                                                                                    
 ┌──(divyanshu㉿kali)-[~/Desktop]
 └─$ ./code            
 Enter the number of processes: 7
@@ -266,11 +266,11 @@ Average Turnaround Time: 13.00
 Total Idle Time: 0
 
 Gantt Chart:
-0----3----7----11----13----18----27----37
-| P1 | P3 | P6 | P4 | P2 | P5 | P7 |
-0----3----7----11----13----18----27----37
+0---- 3---- 7----11----13----18----27----37
+| P1  | P3  | P6  | P4  | P2  | P5  | P7  |
+0---- 3---- 7----11----13----18----27----37
 
 Detailed Gantt Chart:
 P1 (0-3)        P3 (3-7)        P6 (7-11)       P4 (11-13)      P2 (13-18)      P5 (18-27)      P7 (27-37)
 
-*/
+ */
