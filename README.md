@@ -1,6 +1,3 @@
-Here's the correct format of your README in Markdown, which will render properly on GitHub:
-
-```markdown
 # CPU Scheduling Algorithms
 
 Welcome to my **CPU Scheduling Algorithms** repository! This project showcases various CPU scheduling techniques, both preemptive and non-preemptive, implemented in C. These algorithms are fundamental to operating systems, ensuring efficient process management and resource allocation.
