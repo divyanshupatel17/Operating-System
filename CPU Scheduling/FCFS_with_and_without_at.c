@@ -74,7 +74,7 @@ void fcfs(Process processes[], int n) {
     printf("\nAverage Turnaround Time: %.2f", tatavg / n);
     printf("\nTotal Idle Time: %d\n", idleTime);
 
-    // Display Gantt Chart
+    // Display Gantt Chart : FORMAT 1
     printf("\nGantt Chart:\n");
 
     // Print the top border
@@ -100,6 +100,7 @@ void fcfs(Process processes[], int n) {
     }
     printf("\n");
 
+    // Display Gantt Chart : FORMAT 2
     // Detailed Gantt chart with idle times
     printf("\nDetailed Gantt Chart:\n");
     int lastTime = 0;
