@@ -1,8 +1,10 @@
+// NOTE : There is not any case in Priority_Preemptive where AT=0 for all as if AT=0 for all it behaves like Priority_Non_Preemptive type CPU scheduling 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 
-#define MAX_PROCESSES 100
+#define MAX_PROCESSES 100 // Maximum number of processes that can be handled
 
 // Structure to represent a process
 typedef struct {
@@ -29,6 +31,7 @@ typedef struct {
 void display_ready_queue(Process processes[], int n, int current_time) {
     printf("Ready Queue at time %d: ", current_time);
     for (int i = 0; i < n; i++) {
+        // Check if the process has arrived and still has remaining execution time
         if (processes[i].arrival_time <= current_time && processes[i].remaining_time > 0) {
             printf("P%d ", processes[i].id);
         }
@@ -65,6 +68,7 @@ void priority_preemptive_scheduling(Process processes[], int n) {
     int prev_process = -1;
     GanttSlice gantt[MAX_PROCESSES * 2]; // Gantt chart may have more slices than processes
     int gantt_size = 0;
+    int total_idle_time = 0;
 
     while (completed < n) {
         // Display the ready queue at the current time
@@ -79,16 +83,14 @@ void priority_preemptive_scheduling(Process processes[], int n) {
                 // Start a new idle slice
                 gantt[gantt_size].process_id = -1;
                 gantt[gantt_size].start_time = current_time;
+                gantt[gantt_size].end_time = current_time + 1;
+                gantt_size++;
+            } else {
+                // Extend the current idle slice
+                gantt[gantt_size - 1].end_time++;
             }
             current_time++;
-            if (gantt_size > 0 && gantt[gantt_size - 1].process_id == -1) {
-                // Extend the current idle slice
-                gantt[gantt_size - 1].end_time = current_time;
-            } else {
-                // Finalize the last idle slice
-                gantt[gantt_size - 1].end_time = current_time;
-                gantt_size++;
-            }
+            total_idle_time++;
         } else {
             // A process is selected for execution
             Process *p = &processes[highest_priority_process];
@@ -101,8 +103,7 @@ void priority_preemptive_scheduling(Process processes[], int n) {
 
             // Update Gantt chart
             if (prev_process != highest_priority_process) {
-                if (gantt_size > 0 && gantt[gantt_size - 1].process_id == prev_process) {
-                    // Extend the last process slice
+                if (gantt_size > 0) {
                     gantt[gantt_size - 1].end_time = current_time;
                 }
                 gantt[gantt_size].process_id = p->id;
@@ -130,7 +131,7 @@ void priority_preemptive_scheduling(Process processes[], int n) {
         }
     }
 
-    // Calculate and print average times
+    // Calculate average times
     float avg_turnaround_time = 0, avg_waiting_time = 0, avg_response_time = 0;
     for (int i = 0; i < n; i++) {
         avg_turnaround_time += processes[i].turnaround_time;
@@ -148,10 +149,11 @@ void priority_preemptive_scheduling(Process processes[], int n) {
                processes[i].response_time);
     }
 
-    // Print average times
+    // Print average times and total idle time
     printf("\nAverage Turnaround Time: %.2f", avg_turnaround_time / n);
     printf("\nAverage Waiting Time: %.2f", avg_waiting_time / n);
-    printf("\nAverage Response Time: %.2f\n", avg_response_time / n);
+    printf("\nAverage Response Time: %.2f", avg_response_time / n);
+    printf("\nTotal Idle Time: %d\n", total_idle_time);
 
     // Print Gantt Chart
     printf("\nGantt Chart:\n");
@@ -187,20 +189,12 @@ int main() {
     // Input details for each process
     for (int i = 0; i < n; i++) {
         printf("Enter details for process %d:\n", i + 1);
-        
-        // Input Process ID
         printf("Process ID: ");
         scanf("%d", &processes[i].id);
-        
-        // Input Arrival Time
         printf("Arrival Time: ");
         scanf("%d", &processes[i].arrival_time);
-        
-        // Input Burst Time
         printf("Burst Time: ");
         scanf("%d", &processes[i].burst_time);
-        
-        // Input Priority
         printf("Priority (lower value means higher priority): ");
         scanf("%d", &processes[i].priority);
         
@@ -215,6 +209,7 @@ int main() {
 
     return 0;
 }
+
 
 /*
 ┌──(divyanshu㉿kali)-[~/Desktop]
@@ -300,6 +295,7 @@ P7       10      1       1         11    1       0       0
 Average Turnaround Time: 13.71
 Average Waiting Time: 9.86
 Average Response Time: 8.71
+Total Idle Time: 0
 
 Gantt Chart:
 | P1  | P5  | P7  | P5  | P1  | P2  | P3  | P4  | P6  |
