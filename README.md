@@ -51,6 +51,4 @@ Each folder contains C code that implements the corresponding scheduling algorit
 
 This repository is part of my larger journey into operating systems and system-level programming. Feel free to explore more of my projects and connect with me on GitHub or through my portfolio.
 
-```
 
-This Markdown will display as a nicely formatted README on GitHub, including headers, code blocks, and lists.
