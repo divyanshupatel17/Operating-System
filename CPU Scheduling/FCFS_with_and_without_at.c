@@ -11,10 +11,21 @@ typedef struct {
     int wt;       // Waiting Time
     int tat;      // Turnaround Time
     int rt;       // Response Time
+    int completed; // Flag to indicate if the process is completed
 } Process;
 
 int compareArrivalTime(const void *a, const void *b) {
     return ((Process*)a)->at - ((Process*)b)->at;
+}
+
+void displayReadyQueue(Process processes[], int n, int currentTime) {
+    printf("Ready Queue at time %d: ", currentTime);
+    for (int i = 0; i < n; i++) {
+        if (processes[i].at <= currentTime && processes[i].completed == 0) {
+            printf("P%d ", processes[i].id);
+        }
+    }
+    printf("\n");
 }
 
 void fcfs(Process processes[], int n) {
@@ -25,16 +36,25 @@ void fcfs(Process processes[], int n) {
     // Sort processes by arrival time
     qsort(processes, n, sizeof(Process), compareArrivalTime);
     
+    // Initialize the completed flag to 0 (not completed)
+    for (int i = 0; i < n; i++) {
+        processes[i].completed = 0;
+    }
+    
     // Calculate waiting time, turnaround time, completion time, and response time
     for (int i = 0; i < n; i++) {
         if (currentTime < processes[i].at) {
             idleTime += processes[i].at - currentTime;  // Calculate idle time
             currentTime = processes[i].at;  // Jump to the arrival time of the current process
         }
+
+        displayReadyQueue(processes, n, currentTime);  // Display the ready queue
+        
         processes[i].rt = currentTime - processes[i].at;
         processes[i].wt = processes[i].rt;
         processes[i].tat = processes[i].wt + processes[i].bt;
         processes[i].ct = currentTime + processes[i].bt;
+        processes[i].completed = 1;  // Mark the process as completed
         currentTime += processes[i].bt;  // Update the current time after process execution
     }
     
@@ -131,15 +151,17 @@ int main() {
         scanf("%d", &processes[i].bt);
     }
 
+    printf("\n\n");
     // Call the FCFS scheduling function
     fcfs(processes, n);
 
     return 0;
 }
 
+
 /*
 ┌──(divyanshu㉿kali)-[~/Desktop]
-└─$ gcc temp.c -o code
+└─$ gcc temp.c -o code                                                                                                                                                                                                                                    
                                                                                                                                                                                                                                             
 ┌──(divyanshu㉿kali)-[~/Desktop]
 └─$ ./code            
@@ -161,6 +183,13 @@ Enter Process ID for Process 4: 5
 Enter Arrival Time for Process 4: 4
 Enter Burst Time for Process 4: 4
 
+
+Ready Queue at time 0: P2 
+Ready Queue at time 2: P1 P3 
+Ready Queue at time 4: P3 P4 P5 
+Ready Queue at time 7: P4 P5 
+Ready Queue at time 12: P5 
+
 PROCESS ID      BURST TIME      ARRIVAL TIME    COMPLETION TIME WAITING TIME    TURNAROUND TIME RESPONSE TIME
 2               1               0               1               0               1               0
 1               2               2               4               0               2               0
@@ -180,4 +209,4 @@ Timeline: 0-------------------------
 Detailed Gantt Chart:
 P2 (0-1)        Idle (1-2)      P1 (2-4)        P3 (4-7)        P4 (7-12)       P5 (12-16)
 
- */
+*/
