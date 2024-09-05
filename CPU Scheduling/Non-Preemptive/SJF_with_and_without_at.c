@@ -259,6 +259,8 @@ Idle (0-1)      P3 (1-3)        P1 (3-6)        P2 (6-10)       P4 (10-14)
 
 */
 
+// EASY CODE 
+
 #include <stdio.h>
 
 typedef struct {
@@ -271,7 +273,7 @@ typedef struct {
     int rt;     // Response Time
 } Process;
 
-void calculateTimes(Process p[], int n, float *avgWT, float *avgTAT, int *totalIdleTime) {
+void SJF(Process p[], int n, float *avgWT, float *avgTAT, int *totalIdleTime) {
     int completed = 0, currentTime = 0, minIndex;
     int isCompleted[n];
     for (int i = 0; i < n; i++) isCompleted[i] = 0;
@@ -322,13 +324,25 @@ void calculateTimes(Process p[], int n, float *avgWT, float *avgTAT, int *totalI
 void printGanttChart(Process p[], int n) {
     printf("\nGantt Chart:\n|");
     int currentTime = 0;
+    
+    // Sort processes by their completion times to display in increasing order
+    for (int i = 0; i < n-1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (p[i].ct > p[j].ct) {
+                Process temp = p[i];
+                p[i] = p[j];
+                p[j] = temp;
+            }
+        }
+    }
+
     for (int i = 0; i < n; i++) {
         if (p[i].at > currentTime) {
             printf(" Idle |");
             currentTime = p[i].at;
         }
         printf(" P%d |", p[i].id);
-        currentTime += p[i].bt;
+        currentTime = p[i].ct;
     }
     printf("\n0");
     currentTime = 0;
@@ -338,7 +352,7 @@ void printGanttChart(Process p[], int n) {
             currentTime = p[i].at;
         }
         printf("    %d", p[i].ct);
-        currentTime += p[i].bt;
+        currentTime = p[i].ct;
     }
     printf("\n");
 }
@@ -354,7 +368,7 @@ int main() {
 
     float avgWT, avgTAT;
     int totalIdleTime;
-    calculateTimes(p, n, &avgWT, &avgTAT, &totalIdleTime);
+    SJF(p, n, &avgWT, &avgTAT, &totalIdleTime);
 
     printf("ID\tAT\tBT\tCT\tTAT\tWT\tRT\n");
     for (int i = 0; i < n; i++) {
@@ -369,3 +383,27 @@ int main() {
 
     return 0;
 }
+
+/*
+Ready Queue at time 0: Idle
+Ready Queue at time 1: P1 P3 
+Ready Queue at time 3: P1 P2 
+Ready Queue at time 6: P2 P4 
+Ready Queue at time 10: P4 
+ID	AT	BT	CT	TAT	WT	RT
+1	1	3	6	5	2	2
+2	2	4	10	8	4	4
+3	1	2	3	2	0	0
+4	4	4	14	10	6	6
+
+Average Waiting Time: 3.00
+Average Turnaround Time: 6.25
+Total Idle Time: 1
+
+Gantt Chart:
+| Idle | P3 | P1 | P2 | P4 |
+0    1    3    6    10    14
+
+
+=== Code Execution Successful ===
+*/
