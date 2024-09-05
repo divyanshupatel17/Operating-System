@@ -258,3 +258,114 @@ Detailed Gantt Chart:
 Idle (0-1)      P3 (1-3)        P1 (3-6)        P2 (6-10)       P4 (10-14)
 
 */
+
+#include <stdio.h>
+
+typedef struct {
+    int id;     // Process ID
+    int bt;     // Burst Time
+    int at;     // Arrival Time
+    int ct;     // Completion Time
+    int wt;     // Waiting Time
+    int tat;    // Turnaround Time
+    int rt;     // Response Time
+} Process;
+
+void calculateTimes(Process p[], int n, float *avgWT, float *avgTAT, int *totalIdleTime) {
+    int completed = 0, currentTime = 0, minIndex;
+    int isCompleted[n];
+    for (int i = 0; i < n; i++) isCompleted[i] = 0;
+
+    *totalIdleTime = 0;
+    while (completed != n) {
+        minIndex = -1;
+        for (int i = 0; i < n; i++) {
+            if (p[i].at <= currentTime && !isCompleted[i]) {
+                if (minIndex == -1 || p[i].bt < p[minIndex].bt) {
+                    minIndex = i;
+                }
+            }
+        }
+
+        if (minIndex != -1) {
+            printf("Ready Queue at time %d: ", currentTime);
+            for (int i = 0; i < n; i++) {
+                if (p[i].at <= currentTime && !isCompleted[i]) {
+                    printf("P%d ", p[i].id);
+                }
+            }
+            printf("\n");
+
+            currentTime += p[minIndex].bt;
+            p[minIndex].ct = currentTime;
+            p[minIndex].tat = p[minIndex].ct - p[minIndex].at;
+            p[minIndex].wt = p[minIndex].tat - p[minIndex].bt;
+            p[minIndex].rt = p[minIndex].wt;
+            isCompleted[minIndex] = 1;
+            completed++;
+        } else {
+            printf("Ready Queue at time %d: Idle\n", currentTime);
+            (*totalIdleTime)++;
+            currentTime++;
+        }
+    }
+
+    int totalWT = 0, totalTAT = 0;
+    for (int i = 0; i < n; i++) {
+        totalWT += p[i].wt;
+        totalTAT += p[i].tat;
+    }
+    *avgWT = (float)totalWT / n;
+    *avgTAT = (float)totalTAT / n;
+}
+
+void printGanttChart(Process p[], int n) {
+    printf("\nGantt Chart:\n|");
+    int currentTime = 0;
+    for (int i = 0; i < n; i++) {
+        if (p[i].at > currentTime) {
+            printf(" Idle |");
+            currentTime = p[i].at;
+        }
+        printf(" P%d |", p[i].id);
+        currentTime += p[i].bt;
+    }
+    printf("\n0");
+    currentTime = 0;
+    for (int i = 0; i < n; i++) {
+        if (p[i].at > currentTime) {
+            printf("    %d", p[i].at);
+            currentTime = p[i].at;
+        }
+        printf("    %d", p[i].ct);
+        currentTime += p[i].bt;
+    }
+    printf("\n");
+}
+
+int main() {
+    int n = 4;
+    Process p[4] = {
+        {1, 3, 1, 0, 0, 0, 0},
+        {2, 4, 2, 0, 0, 0, 0},
+        {3, 2, 1, 0, 0, 0, 0},
+        {4, 4, 4, 0, 0, 0, 0}
+    };
+
+    float avgWT, avgTAT;
+    int totalIdleTime;
+    calculateTimes(p, n, &avgWT, &avgTAT, &totalIdleTime);
+
+    printf("ID\tAT\tBT\tCT\tTAT\tWT\tRT\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\n", p[i].id, p[i].at, p[i].bt, p[i].ct, p[i].tat, p[i].wt, p[i].rt);
+    }
+
+    printf("\nAverage Waiting Time: %.2f\n", avgWT);
+    printf("Average Turnaround Time: %.2f\n", avgTAT);
+    printf("Total Idle Time: %d\n", totalIdleTime);
+
+    printGanttChart(p, n);
+
+    return 0;
+}
