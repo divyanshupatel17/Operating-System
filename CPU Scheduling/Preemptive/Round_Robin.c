@@ -183,7 +183,7 @@ int main() {
     return 0;
 }
 
-                                 
+/*                            
 ┌──(divyanshu㉿kali)-[~/Desktop]
 └─$ gcc temp.c -o code
                                                                                                                     
@@ -236,3 +236,4 @@ Gantt Chart:
 | P1 | P2 | P3 | P4 | P1 | P2 | P3 | P4 | P1 | P3 | P4 | P3 | P4 |
  0   3   6   9  12  15  17  20  23  25  28  31  32  34  
                                                           
+*/
