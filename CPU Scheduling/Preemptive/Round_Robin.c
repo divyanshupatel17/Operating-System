@@ -1,42 +1,44 @@
-#include<stdio.h>
-#include<limits.h>
-#include<stdbool.h>
-#include<stdlib.h>
+#include <stdio.h>
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 struct process_struct {
-    int pid;
-    int at;
-    int bt;
-    int ct, wt, tat, rt, start_time;
-    int bt_remaining;
+    int pid;           // Process ID
+    int at;            // Arrival Time
+    int bt;            // Burst Time
+    int ct;            // Completion Time
+    int wt;            // Waiting Time
+    int tat;           // Turnaround Time
+    int rt;            // Response Time
+    int start_time;    // Start Time
+    int bt_remaining;  // Remaining Burst Time
 } ps[100];
 
-int gantt_chart[200];  // To store the order of process execution in the Gantt chart
-int gantt_time[200];   // To store the corresponding time points for each process in Gantt chart
-int gantt_chart_index = 0;
+int gantt_chart[200];  // Stores the order of process execution for the Gantt chart
+int gantt_time[200];   // Stores the corresponding time points for the Gantt chart
+int gantt_chart_index = 0;  // Tracks the index for the Gantt chart
 
+// Function to find the maximum of two integers
 int findmax(int a, int b) {
     return a > b ? a : b;
 }
 
+// Comparator function for qsort to sort processes by arrival time
 int comparatorAT(const void *a, const void *b) {
     int x = ((struct process_struct *)a)->at;
     int y = ((struct process_struct *)b)->at;
-    if (x < y)
-        return -1;
-    else if (x >= y)
-        return 1;
+    return x - y;
 }
 
+// Comparator function for qsort to sort processes by process ID
 int comparatorPID(const void *a, const void *b) {
     int x = ((struct process_struct *)a)->pid;
     int y = ((struct process_struct *)b)->pid;
-    if (x < y)
-        return -1;
-    else if (x >= y)
-        return 1;
+    return x - y;
 }
 
+// Function to display the ready queue
 void display_ready_queue(int queue[], int front, int rear) {
     printf("Ready Queue: ");
     for (int i = front; i <= rear; i++) {
@@ -45,13 +47,13 @@ void display_ready_queue(int queue[], int front, int rear) {
     printf("\n");
 }
 
+// Function to display the Gantt chart
 void display_gantt_chart() {
     printf("\nGantt Chart:\n|");
     for (int i = 0; i < gantt_chart_index; i++) {
         printf(" P%d |", gantt_chart[i]);
     }
     printf("\n");
-    //printf("\nTimeline:\n");
     for (int i = 0; i <= gantt_chart_index; i++) {
         printf("%2d  ", gantt_time[i]);
     }
@@ -60,13 +62,16 @@ void display_gantt_chart() {
 
 int main() {
     int n, index;
-    bool visited[100] = { false }, is_first_process = true;
+    bool visited[100] = {false}, is_first_process = true;
     int current_time = 0, completed = 0, tq, total_idle_time = 0;
+    
     printf("Enter total number of processes: ");
     scanf("%d", &n);
+    
     int queue[100], front = -1, rear = -1;
     float sum_tat = 0, sum_wt = 0, sum_rt = 0;
 
+    // Input process data
     for (int i = 0; i < n; i++) {
         printf("\nEnter Process %d PID: ", i + 1);
         scanf("%d", &ps[i].pid);
@@ -83,33 +88,37 @@ int main() {
     printf("\nEnter time quanta: ");
     scanf("%d", &tq);
 
-    // Sort structure on the basis of Arrival time in increasing order
+    // Sort processes based on arrival time
     qsort((void *)ps, n, sizeof(struct process_struct), comparatorAT);
+
+    // Initialize the ready queue
     front = rear = 0;
     queue[rear] = 0;
     visited[0] = true;
 
     while (completed != n) {
-        display_ready_queue(queue, front, rear);  // Display ready queue
+        display_ready_queue(queue, front, rear);  // Display the ready queue
 
         index = queue[front];
         front++;
 
-        // Add process to Gantt chart
+        // Add process to the Gantt chart if it's not already there
         if (gantt_chart_index == 0 || gantt_chart[gantt_chart_index - 1] != ps[index].pid) {
             gantt_chart[gantt_chart_index] = ps[index].pid;
             gantt_time[gantt_chart_index] = current_time;
             gantt_chart_index++;
         }
 
+        // If it's the first execution of the process
         if (ps[index].bt_remaining == ps[index].bt) {
             ps[index].start_time = findmax(current_time, ps[index].at);
-            total_idle_time += (is_first_process == true) ? 0 : ps[index].start_time - current_time;
+            total_idle_time += (is_first_process ? 0 : ps[index].start_time - current_time);
             current_time = ps[index].start_time;
             is_first_process = false;
         }
 
-        if (ps[index].bt_remaining - tq > 0) {
+        // Execute the process for the time quantum or less
+        if (ps[index].bt_remaining > tq) {
             ps[index].bt_remaining -= tq;
             current_time += tq;
         } else {
@@ -127,20 +136,20 @@ int main() {
             sum_rt += ps[index].rt;
         }
 
-        // Check which new processes need to be pushed to Ready Queue from the input list
+        // Add new processes to the ready queue if they have arrived
         for (int i = 1; i < n; i++) {
-            if (ps[i].bt_remaining > 0 && ps[i].at <= current_time && visited[i] == false) {
+            if (ps[i].bt_remaining > 0 && ps[i].at <= current_time && !visited[i]) {
                 queue[++rear] = i;
                 visited[i] = true;
             }
         }
 
-        // Check if the current process needs to be pushed back to the Ready Queue
+        // If the current process is not finished, add it back to the ready queue
         if (ps[index].bt_remaining > 0) {
             queue[++rear] = index;
         }
 
-        // If the queue is empty, just add one process from the list, whose remaining burst time > 0
+        // If the queue is empty, add the next process that has not completed
         if (front > rear) {
             for (int i = 1; i < n; i++) {
                 if (ps[i].bt_remaining > 0) {
@@ -155,76 +164,75 @@ int main() {
     // Store the final time in the Gantt chart
     gantt_time[gantt_chart_index] = current_time;
 
-    // Sort so that process ID in output comes in Original order (just for interactivity - Not needed otherwise)
+    // Sort processes by PID for output
     qsort((void *)ps, n, sizeof(struct process_struct), comparatorPID);
 
-    // Output
-    printf("\nProcess No.\tPID\tAT\tCPU Burst Time\tStart Time\tCT\tTAT\tWT\tRT\n");
-    for (int i = 0; i < n; i++)
-        printf("%d\t\t%d\t%d\t%d\t\t%d\t\t%d\t%d\t%d\t%d\n", i + 1, ps[i].pid, ps[i].at, ps[i].bt, ps[i].start_time, ps[i].ct, ps[i].tat, ps[i].wt, ps[i].rt);
-    printf("\n");
+    // Display process details
+    printf("\nProcess No.\tPID\tAT\tBT\tStart Time\tCT\tTAT\tWT\tRT\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t\t%d\t%d\t%d\t%d\t\t%d\t%d\t%d\t%d\n", i + 1, ps[i].pid, ps[i].at, ps[i].bt, ps[i].start_time, ps[i].ct, ps[i].tat, ps[i].wt, ps[i].rt);
+    }
 
-    printf("\nAverage Turn Around time= %.2f", (float)sum_tat / n);
-    printf("\nAverage Waiting Time= %.2f", (float)sum_wt / n);
-    printf("\nAverage Response Time= %.2f", (float)sum_rt / n);
+    printf("\nAverage Turn Around Time = %.2f", sum_tat / n);
+    printf("\nAverage Waiting Time = %.2f", sum_wt / n);
+    printf("\nAverage Response Time = %.2f\n", sum_rt / n);
 
-    display_gantt_chart();  // Display Gantt chart
+    // Display the Gantt chart
+    display_gantt_chart();
 
     return 0;
 }
 
-
-/*
+                                 
 ┌──(divyanshu㉿kali)-[~/Desktop]
 └─$ gcc temp.c -o code
-                                                                                                                                                                                                                                           
+                                                                                                                    
 ┌──(divyanshu㉿kali)-[~/Desktop]
 └─$ ./code            
-Enter total number of processes: 5
+Enter total number of processes: 4
 
 Enter Process 1 PID: 1
 Enter Process 1 Arrival Time: 0
-Enter Process 1 Burst Time: 5
+Enter Process 1 Burst Time: 8
 
-Enter Process 2 PID: 2
-Enter Process 2 Arrival Time: 1
-Enter Process 2 Burst Time: 3
+Enter Process 2 PID: 2 
+Enter Process 2 Arrival Time: 0
+Enter Process 2 Burst Time: 5
 
 Enter Process 3 PID: 3
-Enter Process 3 Arrival Time: 2
-Enter Process 3 Burst Time: 1
+Enter Process 3 Arrival Time: 0
+Enter Process 3 Burst Time: 10
 
 Enter Process 4 PID: 4
-Enter Process 4 Arrival Time: 3
-Enter Process 4 Burst Time: 2
+Enter Process 4 Arrival Time: 0
+Enter Process 4 Burst Time: 11
 
-Enter Process 5 PID: 5
-Enter Process 5 Arrival Time: 4
-Enter Process 5 Burst Time: 3
-
-Enter time quanta: 2
+Enter time quanta: 3
 Ready Queue: P0 
-Ready Queue: P1 P2 P0 
-Ready Queue: P2 P0 P3 P4 P1 
-Ready Queue: P0 P3 P4 P1 
-Ready Queue: P3 P4 P1 P0 
-Ready Queue: P4 P1 P0 
-Ready Queue: P1 P0 P4 
-Ready Queue: P0 P4 
-Ready Queue: P4 
+Ready Queue: P1 P2 P3 P0 
+Ready Queue: P2 P3 P0 P1 
+Ready Queue: P3 P0 P1 P2 
+Ready Queue: P0 P1 P2 P3 
+Ready Queue: P1 P2 P3 P0 
+Ready Queue: P2 P3 P0 
+Ready Queue: P3 P0 P2 
+Ready Queue: P0 P2 P3 
+Ready Queue: P2 P3 
+Ready Queue: P3 P2 
+Ready Queue: P2 P3 
+Ready Queue: P3 
 
-Process No.     PID     AT      CPU Burst Time  Start Time      CT      TAT     WT      RT
-1               1       0       5               0               13      13      8       0
-2               2       1       3               2               12      11      8       1
-3               3       2       1               4               5       3       2       2
-4               4       3       2               7               9       6       4       4
-5               5       4       3               9               14      10      7       5
+Process No.     PID     AT      BT      Start Time      CT      TAT     WT      RT
+1               1       0       8       0               25      25      17      0
+2               2       0       5       3               17      17      12      3
+3               3       0       10      6               32      32      22      6
+4               4       0       11      9               34      34      23      9
 
+Average Turn Around Time = 27.00
+Average Waiting Time = 18.50
+Average Response Time = 4.50
 
-Average Turn Around time= 8.60
-Average Waiting Time= 5.80
-Average Response Time= 2.40
 Gantt Chart:
-| P1 | P2 | P3 | P1 | P4 | P5 | P2 | P1 | P5 |
- 0   2   4   5   7   9  11  12  13  14  
-*/
+| P1 | P2 | P3 | P4 | P1 | P2 | P3 | P4 | P1 | P3 | P4 | P3 | P4 |
+ 0   3   6   9  12  15  17  20  23  25  28  31  32  34  
+                                                          
