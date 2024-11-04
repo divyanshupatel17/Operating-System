@@ -54,13 +54,13 @@ void calculateAverage(struct Process p[], int n, float *avgTurn, float *avgWaiti
     *avgTurn = 0;
     *avgWaiting = 0;
     *avgResponse = 0;
-    
+
     for(int i = 0; i < n; i++) {
         *avgTurn += p[i].turnTime;
         *avgWaiting += p[i].waitingTime;
         *avgResponse += p[i].responseTime;
     }
-    
+
     *avgTurn /= n;
     *avgWaiting /= n;
     *avgResponse /= n;
@@ -75,10 +75,10 @@ void displayResults(struct Process p[], int n, const char* algorithm) {
                i+1, p[i].pid, p[i].arrivalTime, p[i].burstTime, p[i].startTime,
                p[i].completionTime, p[i].turnTime, p[i].waitingTime, p[i].responseTime);
     }
-    
+
     float avgTurn, avgWaiting, avgResponse;
     calculateAverage(p, n, &avgTurn, &avgWaiting, &avgResponse);
-    
+
     printf("\nAverage Turnaround Time = %.2f\n", avgTurn);
     printf("Average Waiting Time = %.2f\n", avgWaiting);
     printf("Average Response Time = %.2f\n", avgResponse);
@@ -90,18 +90,18 @@ void SRTF(struct Process p[], int n) {
     int completed = 0;
     int *remainingTime = (int*)malloc(n * sizeof(int));
     int *firstTime = (int*)malloc(n * sizeof(int));
-    
+
     // Initialize
     for(int i = 0; i < n; i++) {
         remainingTime[i] = p[i].burstTime;
         firstTime[i] = 1;
         p[i].responseTime = -1;
     }
-    
+
     while(completed != n) {
         int minRem = INT_MAX;
         int shortest = -1;
-        
+
         // Find process with minimum remaining time
         for(int i = 0; i < n; i++) {
             if(p[i].arrivalTime <= currentTime && remainingTime[i] > 0) {
@@ -116,7 +116,7 @@ void SRTF(struct Process p[], int n) {
                 }
             }
         }
-        
+
         if(shortest != -1) {
             // Record start time and response time
             if(firstTime[shortest]) {
@@ -124,10 +124,10 @@ void SRTF(struct Process p[], int n) {
                 p[shortest].responseTime = currentTime - p[shortest].arrivalTime;
                 firstTime[shortest] = 0;
             }
-            
+
             remainingTime[shortest]--;
             currentTime++;
-            
+
             if(remainingTime[shortest] == 0) {
                 completed++;
                 p[shortest].completionTime = currentTime;
@@ -138,7 +138,7 @@ void SRTF(struct Process p[], int n) {
             currentTime++;
         }
     }
-    
+
     free(remainingTime);
     free(firstTime);
 }
@@ -149,18 +149,18 @@ void PriorityPreemptive(struct Process p[], int n) {
     int completed = 0;
     int *remainingTime = (int*)malloc(n * sizeof(int));
     int *firstTime = (int*)malloc(n * sizeof(int));
-    
+
     // Initialize
     for(int i = 0; i < n; i++) {
         remainingTime[i] = p[i].burstTime;
         firstTime[i] = 1;
         p[i].responseTime = -1;
     }
-    
+
     while(completed != n) {
         int highestPriority = INT_MAX;
         int selected = -1;
-        
+
         // Find process with highest priority
         for(int i = 0; i < n; i++) {
             if(p[i].arrivalTime <= currentTime && remainingTime[i] > 0) {
@@ -175,7 +175,7 @@ void PriorityPreemptive(struct Process p[], int n) {
                 }
             }
         }
-        
+
         if(selected != -1) {
             // Record start time and response time
             if(firstTime[selected]) {
@@ -183,10 +183,10 @@ void PriorityPreemptive(struct Process p[], int n) {
                 p[selected].responseTime = currentTime - p[selected].arrivalTime;
                 firstTime[selected] = 0;
             }
-            
+
             remainingTime[selected]--;
             currentTime++;
-            
+
             if(remainingTime[selected] == 0) {
                 completed++;
                 p[selected].completionTime = currentTime;
@@ -197,7 +197,7 @@ void PriorityPreemptive(struct Process p[], int n) {
             currentTime++;
         }
     }
-    
+
     free(remainingTime);
     free(firstTime);
 }
@@ -206,73 +206,91 @@ void PriorityPreemptive(struct Process p[], int n) {
 void RoundRobin(struct Process p[], int n, int timeQuantum) {
     struct Queue q;
     initQueue(&q);
-    
+
     int currentTime = 0;
     int completed = 0;
     int *remainingTime = (int*)malloc(n * sizeof(int));
-    int *mark = (int*)calloc(n, sizeof(int));
-    
+    int *mark = (int*)calloc(n, sizeof(int));  // Marks if process has been considered for queue
+
     // Initialize
     for(int i = 0; i < n; i++) {
         remainingTime[i] = p[i].burstTime;
         p[i].responseTime = -1;
     }
-    
-    // Push first process
-    push(&q, 0);
-    mark[0] = 1;
-    
+
+    // Find earliest arrival time and push first available process
+    int earliestTime = p[0].arrivalTime;
+    int firstProcess = 0;
+    for(int i = 1; i < n; i++) {
+        if(p[i].arrivalTime < earliestTime) {
+            earliestTime = p[i].arrivalTime;
+            firstProcess = i;
+        }
+    }
+
+    currentTime = earliestTime;  // Start from earliest arrival time
+    push(&q, firstProcess);
+    mark[firstProcess] = 1;
+
     while(completed != n) {
-        int current = pop(&q);
-        
-        // Record start time and response time
-        if(remainingTime[current] == p[current].burstTime) {
-            p[current].startTime = currentTime > p[current].arrivalTime ? 
-                                 currentTime : p[current].arrivalTime;
-            currentTime = p[current].startTime;
-            if(p[current].responseTime == -1) {
-                p[current].responseTime = p[current].startTime - p[current].arrivalTime;
-            }
-        }
-        
-        // Process execution
-        int executionTime = (remainingTime[current] > timeQuantum) ? timeQuantum : remainingTime[current];
-        remainingTime[current] -= executionTime;
-        currentTime += executionTime;
-        
-        // Check for newly arrived processes
-        for(int i = 0; i < n; i++) {
-            if(remainingTime[i] > 0 && p[i].arrivalTime <= currentTime && mark[i] == 0) {
-                push(&q, i);
-                mark[i] = 1;
-            }
-        }
-        
-        // Handle process completion or re-queue
-        if(remainingTime[current] == 0) {
-            completed++;
-            p[current].completionTime = currentTime;
-            p[current].turnTime = p[current].completionTime - p[current].arrivalTime;
-            p[current].waitingTime = p[current].turnTime - p[current].burstTime;
-        } else {
-            push(&q, current);
-        }
-        
-        // Handle empty queue
-        if(isEmpty(&q) && completed != n) {
+        if(isEmpty(&q)) {
+            // Find next available process with minimum arrival time
+            int nextProcess = -1;
+            int minArrival = INT_MAX;
             for(int i = 0; i < n; i++) {
-                if(remainingTime[i] > 0) {
+                if(remainingTime[i] > 0 && !mark[i] && p[i].arrivalTime < minArrival) {
+                    minArrival = p[i].arrivalTime;
+                    nextProcess = i;
+                }
+            }
+            
+            if(nextProcess != -1) {
+                currentTime = p[nextProcess].arrivalTime;  // Jump to next arrival
+                push(&q, nextProcess);
+                mark[nextProcess] = 1;
+            }
+            // No `continue;` here so newly arrived processes can be checked
+        }
+
+        if (!isEmpty(&q)) {
+            int current = pop(&q);
+
+            // Record response time only on first execution
+            if(p[current].responseTime == -1) {
+                p[current].responseTime = currentTime - p[current].arrivalTime;
+                p[current].startTime = currentTime;
+            }
+
+            // Process execution
+            int executionTime = (remainingTime[current] > timeQuantum) ? timeQuantum : remainingTime[current];
+            remainingTime[current] -= executionTime;
+            currentTime += executionTime;
+
+            // Check for newly arrived processes during this time quantum
+            for(int i = 0; i < n; i++) {
+                if(remainingTime[i] > 0 && p[i].arrivalTime <= currentTime && mark[i] == 0) {
                     push(&q, i);
                     mark[i] = 1;
-                    break;
                 }
+            }
+
+            // Handle process completion or re-queue
+            if(remainingTime[current] == 0) {
+                completed++;
+                p[current].completionTime = currentTime;
+                p[current].turnTime = p[current].completionTime - p[current].arrivalTime;
+                p[current].waitingTime = p[current].turnTime - p[current].burstTime;
+            } else {
+                push(&q, current);
             }
         }
     }
-    
+
     free(remainingTime);
     free(mark);
 }
+
+
 int main() {
     int n, choice;
 
@@ -330,3 +348,32 @@ int main() {
     //displayGanttChart(p, n);
     return 0;
 }
+
+
+/*
+Enter number of processes: 5
+Enter Arrival Time, Burst Time, and Priority for process 1: 0 8 1
+Enter Arrival Time, Burst Time, and Priority for process 2: 5 2 1
+Enter Arrival Time, Burst Time, and Priority for process 3: 1 7 1
+Enter Arrival Time, Burst Time, and Priority for process 4: 6 3 1
+Enter Arrival Time, Burst Time, and Priority for process 5: 8 5 1
+Choose Scheduling Algorithm:
+1. Shortest Remaining Time First (SRTF)
+2. Priority Preemptive
+3. Round Robin
+Choice: 3
+Enter Time Quantum for Round Robin: 3
+
+Round Robin Scheduling Results:
+Process No.     PID     AT      BT      Start Time      CT      TAT     WT      RT
+1               1       0       8       0               22      22      14      0
+2               2       5       2       9               11      6       4       4
+3               3       1       7       3               23      22      15      2
+4               4       6       3       11              14      8       5       5
+5               5       8       5       17              25      17      12      9
+
+Average Turnaround Time = 15.00
+Average Waiting Time = 10.00
+Average Response Time = 4.00
+
+*/
