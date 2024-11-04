@@ -1,3 +1,11 @@
+/******************************************************************************
+
+                            Online C Compiler.
+                Code, Compile, Run and Debug C program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -209,13 +217,16 @@ void RoundRobin(struct Process p[], int n, int timeQuantum) {
 
     int currentTime = 0;
     int completed = 0;
-    int *remainingTime = (int*)malloc(n * sizeof(int));
-    int *mark = (int*)calloc(n, sizeof(int));  // Marks if process has been considered for queue
+    // int *remainingTime = (int*)malloc(n * sizeof(int));
+    // int *mark = (int*)calloc(n, sizeof(int));  // Marks if process has been considered for queue
+    int remainingTime[n];
+    int mark[n];
 
     // Initialize
     for(int i = 0; i < n; i++) {
         remainingTime[i] = p[i].burstTime;
         p[i].responseTime = -1;
+        mark[i] = 0;
     }
 
     // Find earliest arrival time and push first available process
@@ -286,8 +297,6 @@ void RoundRobin(struct Process p[], int n, int timeQuantum) {
         }
     }
 
-    free(remainingTime);
-    free(mark);
 }
 
 
