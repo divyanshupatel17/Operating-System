@@ -202,57 +202,227 @@ void PriorityPreemptive(struct Process p[], int n) {
     free(firstTime);
 }
 
-// Round Robin Implementation
+// wrong 
+
+// // Round Robin Implementation
+// void RoundRobin(struct Process p[], int n, int timeQuantum) {
+//     struct Queue q;
+//     initQueue(&q);
+
+//     int currentTime = 0;
+//     int completed = 0;
+//     // int *remainingTime = (int*)malloc(n * sizeof(int));
+//     // int *mark = (int*)calloc(n, sizeof(int));  // Marks if process has been considered for queue
+//     int remainingTime[n];
+//     int mark[n];
+
+//     // Initialize
+//     for(int i = 0; i < n; i++) {
+//         remainingTime[i] = p[i].burstTime;
+//         p[i].responseTime = -1;
+//         mark[i] = 0;
+//     }
+
+//     // Find earliest arrival time and push first available process
+//     int earliestTime = p[0].arrivalTime;
+//     int firstProcess = 0;
+//     for(int i = 1; i < n; i++) {
+//         if(p[i].arrivalTime < earliestTime) {
+//             earliestTime = p[i].arrivalTime;
+//             firstProcess = i;
+//         }
+//     }
+
+//     currentTime = earliestTime;  // Start from earliest arrival time
+//     push(&q, firstProcess);
+//     mark[firstProcess] = 1;
+
+//     while(completed != n) {
+//         if(isEmpty(&q)) {
+//             // Find next available process with minimum arrival time
+//             int nextProcess = -1;
+//             int minArrival = INT_MAX;
+//             for(int i = 0; i < n; i++) {
+//                 if(remainingTime[i] > 0 && !mark[i] && p[i].arrivalTime < minArrival) {
+//                     minArrival = p[i].arrivalTime;
+//                     nextProcess = i;
+//                 }
+//             }
+            
+//             if(nextProcess != -1) {
+//                 currentTime = p[nextProcess].arrivalTime;  // Jump to next arrival
+//                 push(&q, nextProcess);
+//                 mark[nextProcess] = 1;
+//             }
+//             // No `continue;` here so newly arrived processes can be checked
+//         }
+
+//         if (!isEmpty(&q)) {
+//             int current = pop(&q);
+
+//             // Record response time only on first execution
+//             if(p[current].responseTime == -1) {
+//                 p[current].responseTime = currentTime - p[current].arrivalTime;
+//                 p[current].startTime = currentTime;
+//             }
+
+//             // Process execution
+//             int executionTime = (remainingTime[current] > timeQuantum) ? timeQuantum : remainingTime[current];
+//             remainingTime[current] -= executionTime;
+//             currentTime += executionTime;
+
+//             // Check for newly arrived processes during this time quantum
+//             for(int i = 0; i < n; i++) {
+//                 if(remainingTime[i] > 0 && p[i].arrivalTime <= currentTime && mark[i] == 0) {
+//                     push(&q, i);
+//                     mark[i] = 1;
+//                 }
+//             }
+
+//             // Handle process completion or re-queue
+//             if(remainingTime[current] == 0) {
+//                 completed++;
+//                 p[current].completionTime = currentTime;
+//                 p[current].turnTime = p[current].completionTime - p[current].arrivalTime;
+//                 p[current].waitingTime = p[current].turnTime - p[current].burstTime;
+//             } else {
+//                 push(&q, current);
+//             }
+//         }
+//     }
+
+// }
+
+// wrong 
+
+// void RoundRobin(struct Process p[], int n, int timeQuantum) {
+//     struct Queue q;
+//     initQueue(&q);
+
+//     int currentTime = 0;
+//     int completed = 0;
+//     int remainingTime[n];
+//     int mark[n];
+
+//     // Initialize
+//     for(int i = 0; i < n; i++) {
+//         remainingTime[i] = p[i].burstTime;
+//         p[i].responseTime = -1;
+//     }
+
+//     // Find earliest arrival time
+//     int earliestTime = p[0].arrivalTime;
+//     for(int i = 1; i < n; i++) {
+//         if(p[i].arrivalTime < earliestTime) {
+//             earliestTime = p[i].arrivalTime;
+//         }
+//     }
+
+//     currentTime = earliestTime;  // Start from earliest arrival time
+
+//     // Add processes arriving at earliest time
+//     for(int i = 0; i < n; i++) {
+//         if(p[i].arrivalTime == earliestTime) {
+//             push(&q, i);
+//             mark[i] = 1;
+//         }
+//     }
+
+//     while(completed != n) {
+//         if(isEmpty(&q)) {
+//             // Find next arrival time
+//             int nextArrival = INT_MAX;
+//             for(int i = 0; i < n; i++) {
+//                 if(!mark[i] && p[i].arrivalTime < nextArrival) {
+//                     nextArrival = p[i].arrivalTime;
+//                 }
+//             }
+//             if(nextArrival != INT_MAX) {
+//                 currentTime = nextArrival;
+//                 // Add all processes arriving at this time
+//                 for(int i = 0; i < n; i++) {
+//                     if(!mark[i] && p[i].arrivalTime == currentTime) {
+//                         push(&q, i);
+//                         mark[i] = 1;
+//                     }
+//                 }
+//             }
+//         }
+
+//         if (!isEmpty(&q)) {
+//             int current = pop(&q);
+
+//             // Record response time only on first execution
+//             if(p[current].responseTime == -1) {
+//                 p[current].responseTime = currentTime - p[current].arrivalTime;
+//                 p[current].startTime = currentTime;
+//             }
+
+//             // Process execution
+//             int executionTime = (remainingTime[current] > timeQuantum) ? timeQuantum : remainingTime[current];
+            
+//             // Check for new arrivals during each time unit of execution
+//             // int endTime = currentTime + executionTime;
+//             // for(int time = currentTime + 1; time <= endTime; time++) {
+//             //     for(int i = 0; i < n; i++) {
+//             //         if(!mark[i] && p[i].arrivalTime == time) {
+//             //             push(&q, i);
+//             //             mark[i] = 1;
+//             //         }
+//             //     }
+//             // }
+//             int endTime = currentTime + executionTime;
+//             for(int time = currentTime + 1; time <= endTime; time++) {
+//                 for(int i = 0; i < n; i++) {
+//                     if(!mark[i] && p[i].arrivalTime == time) {
+//                         push(&q, i);
+//                         mark[i] = 1;
+//                     }
+//                 }
+//             }
+
+//             remainingTime[current] -= executionTime;
+//             currentTime = endTime;
+
+//             // Handle process completion or re-queue
+//             if(remainingTime[current] == 0) {
+//                 completed++;
+//                 p[current].completionTime = currentTime;
+//                 p[current].turnTime = p[current].completionTime - p[current].arrivalTime;
+//                 p[current].waitingTime = p[current].turnTime - p[current].burstTime;
+//             } else {
+//                 push(&q, current);
+//             }
+//         }
+//     }
+
+//     free(remainingTime);
+//     free(mark);
+// }
+
 void RoundRobin(struct Process p[], int n, int timeQuantum) {
     struct Queue q;
     initQueue(&q);
 
     int currentTime = 0;
     int completed = 0;
-    // int *remainingTime = (int*)malloc(n * sizeof(int));
-    // int *mark = (int*)calloc(n, sizeof(int));  // Marks if process has been considered for queue
     int remainingTime[n];
     int mark[n];
 
-    // Initialize
+    // Initialize remaining time and mark array
     for(int i = 0; i < n; i++) {
         remainingTime[i] = p[i].burstTime;
-        p[i].responseTime = -1;
-        mark[i] = 0;
+        p[i].responseTime = -1; // Initialize response time
+        mark[i] = 0; // Mark processes as not added to the queue
     }
-
-    // Find earliest arrival time and push first available process
-    int earliestTime = p[0].arrivalTime;
-    int firstProcess = 0;
-    for(int i = 1; i < n; i++) {
-        if(p[i].arrivalTime < earliestTime) {
-            earliestTime = p[i].arrivalTime;
-            firstProcess = i;
-        }
-    }
-
-    currentTime = earliestTime;  // Start from earliest arrival time
-    push(&q, firstProcess);
-    mark[firstProcess] = 1;
 
     while(completed != n) {
-        if(isEmpty(&q)) {
-            // Find next available process with minimum arrival time
-            int nextProcess = -1;
-            int minArrival = INT_MAX;
-            for(int i = 0; i < n; i++) {
-                if(remainingTime[i] > 0 && !mark[i] && p[i].arrivalTime < minArrival) {
-                    minArrival = p[i].arrivalTime;
-                    nextProcess = i;
-                }
+        // Check for newly arrived processes
+        for(int i = 0; i < n; i++) {
+            if(p[i].arrivalTime <= currentTime && remainingTime[i] > 0 && mark[i] == 0) {
+                push(&q, i);
+                mark[i] = 1; // Mark as added
             }
-            
-            if(nextProcess != -1) {
-                currentTime = p[nextProcess].arrivalTime;  // Jump to next arrival
-                push(&q, nextProcess);
-                mark[nextProcess] = 1;
-            }
-            // No `continue;` here so newly arrived processes can be checked
         }
 
         if (!isEmpty(&q)) {
@@ -269,28 +439,29 @@ void RoundRobin(struct Process p[], int n, int timeQuantum) {
             remainingTime[current] -= executionTime;
             currentTime += executionTime;
 
-            // Check for newly arrived processes during this time quantum
+            // Check for newly arrived processes during the execution period
             for(int i = 0; i < n; i++) {
-                if(remainingTime[i] > 0 && p[i].arrivalTime <= currentTime && mark[i] == 0) {
+                if(p[i].arrivalTime <= currentTime && remainingTime[i] > 0 && mark[i] == 0) {
                     push(&q, i);
-                    mark[i] = 1;
+                    mark[i] = 1; // Mark as added
                 }
             }
 
-            // Handle process completion or re-queue
+            // Handle process completion
             if(remainingTime[current] == 0) {
                 completed++;
                 p[current].completionTime = currentTime;
                 p[current].turnTime = p[current].completionTime - p[current].arrivalTime;
                 p[current].waitingTime = p[current].turnTime - p[current].burstTime;
             } else {
-                push(&q, current);
+                push(&q, current); // Re-queue the process if not finished
             }
+        } else {
+            // If the queue is empty, increment time
+            currentTime++;
         }
     }
-
 }
-
 
 int main() {
     int n, choice;
