@@ -1,3 +1,6 @@
+// gcc p.c -o code -pthread
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
