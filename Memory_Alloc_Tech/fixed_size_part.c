@@ -121,3 +121,46 @@ int main() {
     
     return 0;
 }
+
+// FIXED
+
+First Fit Allocation:
+Process 1: Allocated to Partition 2
+Process 2: Allocated to Partition 1
+Process 3: Not Allocated
+Process 4: Not Allocated
+
+Best Fit Allocation:
+Process 1: Allocated to Partition 2
+Process 2: Allocated to Partition 1
+Process 3: Not Allocated
+Process 4: Not Allocated
+
+Worst Fit Allocation:
+Process 1: Allocated to Partition 2
+Process 2: Allocated to Partition 1
+Process 3: Not Allocated
+Process 4: Not Allocated
+
+// VARIABLE
+
+First Fit Allocation:
+Process 1: Allocated to Partition 2
+Process 2: Allocated to Partition 1
+Process 3: Allocated to Partition 1
+Process 4: Allocated to Partition 2
+
+Best Fit Allocation:
+Process 1: Allocated to Partition 2
+Process 2: Allocated to Partition 2
+Process 3: Allocated to Partition 1
+Process 4: Not Allocated
+
+Worst Fit Allocation:
+Process 1: Allocated to Partition 2
+Process 2: Allocated to Partition 1
+Process 3: Allocated to Partition 1
+Process 4: Allocated to Partition 2
+┌─[user@parrot]─[~/Desktop/OSLAB/prac]
+└──╼ $
+
