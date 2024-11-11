@@ -71,7 +71,7 @@ void findFCFS(struct Process p[], int n) {
 // Function for Shortest Job First (SJF) Non-Preemptive Scheduling
 void findSJF(struct Process p[], int n) {
     // Sort processes by arrival time first
-    qsort(p, n, sizeof(struct Process), compareArrival);
+    // qsort(p, n, sizeof(struct Process), compareArrival);
 
     int t = 0, c = 0; // Current time and completed processes count
     int completed[n]; // Array to track completed processes
