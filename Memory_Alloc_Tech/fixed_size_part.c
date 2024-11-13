@@ -1,3 +1,5 @@
+// FIXED SIZE PARTINING
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <limits.h>
@@ -164,3 +166,4 @@ Process 4: Allocated to Partition 2
 ┌─[user@parrot]─[~/Desktop/OSLAB/prac]
 └──╼ $
 
+// VARIABLE SIZE PARTINING
