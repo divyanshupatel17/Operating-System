@@ -1,0 +1,173 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <stdbool.h>
+
+#define n 5
+#define m 3
+
+void calculateNeed(int need[n][m], int max[n][m], int alloc[n][m]) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            need[i][j] = max[i][j] - alloc[i][j];
+        }
+    }
+}
+
+bool isSafe(int avail[m], int max[n][m], int alloc[n][m]) {
+    int need[n][m];
+    calculateNeed(need, max, alloc);
+    bool finish[n] = {false};
+    int safeSeq[n];
+    int count = 0;
+
+    while (count < n) {
+        bool found = false;
+        for (int p = 0; p < n; p++) {
+            if (!finish[p]) {
+                bool canProceed = true;
+                for (int j = 0; j < m; j++) {
+                    if (need[p][j] > avail[j]) {
+                        canProceed = false;
+                        break;
+                    }
+                }
+                if (canProceed) {
+                    for (int j = 0; j < m; j++) {
+                        avail[j] += alloc[p][j];
+                    }
+                    finish[p] = true;
+                    safeSeq[count++] = p;
+                    found = true;
+                }
+            }
+        }
+        if (!found) {
+            printf("The system is not in a safe state.\n");
+            return false;
+        }
+    }
+
+    printf("Following is the SAFE Sequence:\n");
+    for (int i = 0; i < n; i++) {
+        printf(" P%d", safeSeq[i]);
+        if (i < n - 1) printf(" ->");
+    }
+    printf("\n");
+    return true;
+}
+
+bool requestResources(int pid, int request[m], int avail[m], int max[n][m], int alloc[n][m]) {
+    int need[n][m];
+    calculateNeed(need, max, alloc);
+
+    for (int i = 0; i < m; i++) {
+        if (request[i] > need[pid][i]) {
+            printf("Error: Process has exceeded its maximum claim.\n");
+            return false;
+        }
+    }
+
+    for (int i = 0; i < m; i++) {
+        if (request[i] > avail[i]) {
+            printf("Resources are not available right now.\n");
+            return false;
+        }
+    }
+
+    for (int i = 0; i < m; i++) {
+        avail[i] -= request[i];
+        alloc[pid][i] += request[i];
+        need[pid][i] -= request[i];
+    }
+
+    if (isSafe(avail, max, alloc)) {
+        return true;
+    } else {
+        for (int i = 0; i < m; i++) {
+            avail[i] += request[i];
+            alloc[pid][i] -= request[i];
+            need[pid][i] += request[i];
+        }
+        printf("Request cannot be granted as it leaves the system in an unsafe state.\n");
+        return false;
+    }
+}
+
+int main() {
+    int alloc[n][m] = {
+        {0, 1, 0},
+        {2, 0, 0},
+        {3, 0, 2},
+        {2, 1, 1},
+        {0, 0, 2}
+    };
+
+    int max[n][m] = {
+        {7, 5, 3},
+        {3, 2, 2},
+        {9, 0, 2},
+        {2, 2, 2},
+        {4, 3, 3}
+    };
+
+    int avail[m] = {3, 3, 2};
+
+    isSafe(avail, max, alloc);
+
+    int request[m] = {1, 0, 2};
+    int pid = 1;
+
+    if (requestResources(pid, request, avail, max, alloc)) {
+        printf("Resources allocated successfully.\n");
+    }
+
+    return 0;
+}

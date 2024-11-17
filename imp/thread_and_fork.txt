@@ -1,0 +1,125 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+void *printOdd(void *param) {
+    int n = *((int *)param);
+    for (int i = 1; i <= n; i += 2) {
+        printf("Thread Odd: %d\n", i);
+    }
+    pthread_exit(NULL);
+}
+
+void *printEven(void *param) {
+    int n = *((int *)param);
+    for (int i = 2; i <= n; i += 2) {
+        printf("Thread Even: %d\n", i);
+    }
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t odd_thread, even_thread;
+    int n = 20; 
+
+    pthread_create(&odd_thread, NULL, printOdd, &n);
+    pthread_create(&even_thread, NULL, printEven, &n);
+
+    // Wait for both threads to finish
+    pthread_join(odd_thread, NULL);
+    pthread_join(even_thread, NULL);
+
+    return 0;
+}
+ 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+void printOdd(int n) {
+    for (int i = 1; i <= n; i += 2) {
+        printf("Parent Odd: %d\n", i);
+    }
+}
+
+void printEven(int n) {
+    for (int i = 2; i <= n; i += 2) {
+        printf("Child Even: %d\n", i);
+    }
+}
+
+int main() {
+    pid_t pid;
+    int n = 20; 
+
+    pid = fork();
+
+    if (pid > 0) {
+        // Parent process prints odd numbers
+        printOdd(n);
+        wait(NULL);  
+    } 
+    else if (pid == 0) {
+        // Child process prints even numbers
+        printEven(n);
+        exit(0); 
+    } 
+    else {
+        // Fork failed
+        printf("Fork failed!\n");
+        return 1;
+    }
+
+    return 0;
+}
